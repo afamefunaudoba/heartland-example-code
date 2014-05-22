@@ -1,4 +1,4 @@
-## SecureSubmit Example Cod
+## SecureSubmit Example Code
 
 Sample source code in various programming languages.
 
