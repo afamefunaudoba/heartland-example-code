@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace End_to_End
+namespace end_to_end
 {
     public class RouteConfig
     {

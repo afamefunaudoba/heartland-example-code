@@ -11,13 +11,12 @@ using Hps.Integrator.Net.Abstractions;
 using System.Net.Mail;
 using System.Web.Helpers;
 
-namespace End_to_End.Controllers
+namespace end_to_end.Controllers
 {
     public class HomeController : Controller
     {
         public ActionResult sendEmail()
         {
-
             WebMail.SmtpServer = "my.smtpserver.com";
             WebMail.SmtpPort = 123;
             WebMail.EnableSsl = false;
@@ -37,12 +36,26 @@ namespace End_to_End.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(End_to_End.Models.UsersContext.UserModel model)
+        public ActionResult Index(int id = 0)
         {
 
-            sendEmail();
+            //sendEmail();
+            
+            string firstname = Request.Form["FirstName"];
+            string lastname = Request.Form["LastName"];
+            string phonenumber = Request.Form["PhoneNumber"];
+            string email = Request.Form["Email"];
+            string address = Request.Form["address"];
+            string city = Request.Form["city"];
+            string state = Request.Form["state"];
+            string zip = Request.Form["zip"];
+            string card_number = Request.Form["card_number"];
+            string card_cvc = Request.Form["card_cvc"];
+            string exp_month = Request.Form["exp_month"];
+            string exp_year = Request.Form["exp_year"];
 
-            var config = new HpsServicesConfig() { SecretAPIKey = "SECRET_API_KEY_HERE" };
+
+            var config = new HpsServicesConfig() { SecretAPIKey = "skapi_cert_MVl7AQB1DkgAun1Ce771jrR-Mq8ZC03wDtrxLUPM0w" };
 
             var chargeService = new HpsCreditService(config);
 
@@ -50,18 +63,18 @@ namespace End_to_End.Controllers
             {
                 Address = new HpsAddress()
                 {
-                    Address = model.address,
-                    Zip = model.zipcode,
-                    State = model.state
+                    Address = address,
+                    Zip = zip,
+                    State = state
                 }
             };
 
             var creditCard = new HpsCreditCard
             {
-                Cvv = model.cvv,
-                ExpMonth = model.expMonth,
-                ExpYear = model.expYear,
-                Number = model.number
+                Cvv = Convert.ToInt32(card_cvc),
+                ExpMonth = Convert.ToInt32(exp_month),
+                ExpYear = Convert.ToInt32(exp_year),
+                Number = card_number
             };
             try
             {
@@ -75,7 +88,7 @@ namespace End_to_End.Controllers
             catch (CardException e)
             { }
 
-            return View(model);
+            return View();
         }
 
         public ActionResult Index()

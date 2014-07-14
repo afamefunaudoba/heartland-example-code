@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "End-to-End", "End-to-End\End-to-End.csproj", "{E529693E-2D6F-4E3B-B740-174CDE40C0F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "end-to-end", "end-to-end\end-to-end.csproj", "{E529693E-2D6F-4E3B-B740-174CDE40C0F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
