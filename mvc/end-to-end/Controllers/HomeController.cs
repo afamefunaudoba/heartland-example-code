@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using Hps.Integrator.Net.Services;
-using Hps.Integrator.Net.Entities;
-using Hps.Integrator.Net.Infrastructure;
-using Hps.Integrator.Net.Serialization;
-using Hps.Integrator.Net.Abstractions;
 using System.Net.Mail;
 using System.Web.Helpers;
+using SecureSubmit;
+using SecureSubmit.Services;
+using SecureSubmit.Services.Credit;
+using SecureSubmit.Abstractions;
+using SecureSubmit.Entities;
+using SecureSubmit.Infrastructure;
+using SecureSubmit.Serialization;
 
 namespace end_to_end.Controllers
 {
@@ -38,9 +40,7 @@ namespace end_to_end.Controllers
         [HttpPost]
         public ActionResult Index(int id = 0)
         {
-
-            //sendEmail();
-            
+                        
             string firstname = Request.Form["FirstName"];
             string lastname = Request.Form["LastName"];
             string phonenumber = Request.Form["PhoneNumber"];
@@ -55,18 +55,13 @@ namespace end_to_end.Controllers
             string exp_year = Request.Form["exp_year"];
 
 
-            var config = new HpsServicesConfig() { SecretAPIKey = "skapi_cert_MVl7AQB1DkgAun1Ce771jrR-Mq8ZC03wDtrxLUPM0w" };
+            var config = new HpsServicesConfig() { SecretApiKey = "skapi_cert_MVl7AQB1DkgAun1Ce771jrR-Mq8ZC03wDtrxLUPM0w" };
 
             var chargeService = new HpsCreditService(config);
 
             var cardHolder = new HpsCardHolder()
             {
-                Address = new HpsAddress()
-                {
-                    Address = address,
-                    Zip = zip,
-                    State = state
-                }
+	            Address = new HpsAddress() { Zip = zip }   
             };
 
             var creditCard = new HpsCreditCard
@@ -76,17 +71,32 @@ namespace end_to_end.Controllers
                 ExpYear = Convert.ToInt32(exp_year),
                 Number = card_number
             };
+
             try
             {
-                var result = chargeService.Charge(10, "usd", creditCard);
-                var auth = result.AuthorizationCode;
+                var authResponse = chargeService.Charge(10.00m, "usd", creditCard);
+
+                chargeService.Capture(authResponse.TransactionId);
+                
+                sendEmail();
+
             }
-            catch (InvalidRequestException e)
-            { }
-            catch (AuthenticationException e)
-            { }
-            catch (CardException e)
-            { }
+            catch (HpsInvalidRequestException e)
+            {
+                // handle error for amount less than zero dollars
+            }
+            catch (HpsAuthenticationException e)
+            {
+                // handle errors related to your HpsServiceConfig
+            }
+            catch (HpsCreditException e)
+            {
+                // handle card-related exceptions: card declined, processing error, etc
+            }
+            catch (HpsGatewayException e)
+            {
+                // handle gateway-related exceptions: invalid cc number, gateway-timeout, etc
+            }            
 
             return View();
         }
