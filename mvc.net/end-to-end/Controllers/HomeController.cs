@@ -36,7 +36,7 @@ namespace end_to_end.Controllers
                 City = details.City,
                 State = details.State,
                 Country = "United States",
-                Zip = numbers.Match(details.Zip).ToString()
+                Zip = numbers.Match(details.Zip ?? string.Empty).ToString()
             };
 
             var validCardHolder = new HpsCardHolder
@@ -44,7 +44,7 @@ namespace end_to_end.Controllers
                 FirstName = details.FirstName,
                 LastName = details.LastName,
                 Address = address,
-                Phone = details.PhoneNumber
+                Phone = numbers.Match(details.PhoneNumber ?? string.Empty).ToString()
             };
 
             var suToken = new HpsTokenData
@@ -105,7 +105,10 @@ namespace end_to_end.Controllers
                     body: "Congratulations, you have just completed a SecureSubmit payment!"
                     );
             }
-            catch (Exception e) { }
+            catch (Exception e)
+            {
+                Response.Write("<strong>Couldn't Send Email</strong>");
+            }
         }        
     }
 
