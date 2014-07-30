@@ -1,110 +1,141 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Net.Mail;
+using System.Text.RegularExpressions;
 using System.Web.Helpers;
-using SecureSubmit;
-using SecureSubmit.Services;
-using SecureSubmit.Services.Credit;
-using SecureSubmit.Abstractions;
+using System.Web.Mvc;
 using SecureSubmit.Entities;
 using SecureSubmit.Infrastructure;
-using SecureSubmit.Serialization;
+using SecureSubmit.Services;
+using SecureSubmit.Services.Credit;
 
 namespace end_to_end.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult sendEmail()
-        {
-            WebMail.SmtpServer = "my.smtpserver.com";
-            WebMail.SmtpPort = 123;
-            WebMail.EnableSsl = false;
-            WebMail.UserName = "username";
-            WebMail.Password = "password";
-            WebMail.From = "email@mail.com";
-            WebMail.SmtpUseDefaultCredentials = false;
-
-            WebMail.Send(
-                to: "anotheremail@mail.com",
-                    subject: "SecureSubmit Payment",
-                    body: "Congratulations, you have just completed a SecureSubmit payment!",
-                    isBodyHtml: true
-                );
-
-            return View("Index");
-        }
-
-        [HttpPost]
-        public ActionResult Index(int id = 0)
-        {
-                        
-            string firstname = Request.Form["FirstName"];
-            string lastname = Request.Form["LastName"];
-            string phonenumber = Request.Form["PhoneNumber"];
-            string email = Request.Form["Email"];
-            string address = Request.Form["address"];
-            string city = Request.Form["city"];
-            string state = Request.Form["state"];
-            string zip = Request.Form["zip"];
-            string card_number = Request.Form["card_number"];
-            string card_cvc = Request.Form["card_cvc"];
-            string exp_month = Request.Form["exp_month"];
-            string exp_year = Request.Form["exp_year"];
-
-
-            var config = new HpsServicesConfig() { SecretApiKey = "skapi_cert_MVl7AQB1DkgAun1Ce771jrR-Mq8ZC03wDtrxLUPM0w" };
-
-            var chargeService = new HpsCreditService(config);
-
-            var cardHolder = new HpsCardHolder()
-            {
-	            Address = new HpsAddress() { Zip = zip }   
-            };
-
-            var creditCard = new HpsCreditCard
-            {
-                Cvv = Convert.ToInt32(card_cvc),
-                ExpMonth = Convert.ToInt32(exp_month),
-                ExpYear = Convert.ToInt32(exp_year),
-                Number = card_number
-            };
-
-            try
-            {
-                var authResponse = chargeService.Charge(10.00m, "usd", creditCard);
-
-                chargeService.Capture(authResponse.TransactionId);
-                
-                sendEmail();
-
-            }
-            catch (HpsInvalidRequestException e)
-            {
-                // handle error for amount less than zero dollars
-            }
-            catch (HpsAuthenticationException e)
-            {
-                // handle errors related to your HpsServiceConfig
-            }
-            catch (HpsCreditException e)
-            {
-                // handle card-related exceptions: card declined, processing error, etc
-            }
-            catch (HpsGatewayException e)
-            {
-                // handle gateway-related exceptions: invalid cc number, gateway-timeout, etc
-            }            
-
-            return View();
-        }
-
         public ActionResult Index()
         {
             return View();
         }
 
+        public ActionResult ProcessPayment(OrderDetails details)
+        {
+            var config = new HpsServicesConfig
+            {
+                SecretApiKey = "skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ",
+                // The following variables will be provided to you during certification
+                VersionNumber = "0000",
+                DeveloperId = "000000"
+            };
+
+            var chargeService = new HpsCreditService(config);
+
+            var numbers = new Regex("^[0-9]+$");
+
+            var address = new HpsAddress
+            {
+                Address = details.Address,
+                City = details.City,
+                State = details.State,
+                Country = "United States",
+                Zip = numbers.Match(details.Zip).ToString()
+            };
+
+            var validCardHolder = new HpsCardHolder
+            {
+                FirstName = details.FirstName,
+                LastName = details.LastName,
+                Address = address,
+                Phone = details.PhoneNumber
+            };
+
+            var suToken = new HpsTokenData
+            {
+                TokenValue = details.Token_value
+            };
+
+            try
+            {
+                var authResponse = chargeService.Charge(15.15m, "usd", suToken.TokenValue, validCardHolder);
+                chargeService.Capture(authResponse.TransactionId);
+
+                SendEmail();
+
+                return View("Success", new SuccessModel {
+                    FirstName = details.FirstName,
+                    TransactionId = authResponse.TransactionId
+                });
+            }
+            catch (HpsInvalidRequestException e)
+            {
+                // handle error for amount less than zero dollars
+                return View("Error", model: "amount less than zero dollars: " + e.Message);
+            }
+            catch (HpsAuthenticationException e)
+            {
+                // handle errors related to your HpsServiceConfig
+                return View("Error", model: "Bad Config: " + e.Message);
+            }
+            catch (HpsCreditException e)
+            {
+                // handle card-related exceptions: card declined, processing error, etc
+                return View("Error", model: "card declined, processing error, etc: " + e.Message);
+            }
+            catch (HpsGatewayException e)
+            {
+                // handle gateway-related exceptions: invalid cc number, gateway-timeout, etc
+                return View("Error", model: "invalid cc number, gateway-timeout, etc: " + e.Message);
+            }            
+        }
+
+        public void SendEmail()
+        {
+            // This information would need to be replaced with your own
+            // or call your own email sending methods
+            try
+            {
+                WebMail.SmtpServer = "my.smtpserver.com";
+                WebMail.SmtpPort = 123;
+                WebMail.EnableSsl = false;
+                WebMail.UserName = "username";
+                WebMail.Password = "password";
+                WebMail.From = "email@mail.com";
+                WebMail.SmtpUseDefaultCredentials = false;
+
+                WebMail.Send(
+                    to: "anotheremail@mail.com",
+                    subject: "SecureSubmit Payment",
+                    body: "Congratulations, you have just completed a SecureSubmit payment!"
+                    );
+            }
+            catch (Exception e) { }
+        }        
+    }
+
+    public class OrderDetails
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+        public string Token_value { get; set; }
+        public string Card_type { get; set; }
+        public string Last_four { get; set; }
+        public string Exp_month { get; set; }
+        public string Exp_year { get; set; }
+    }
+
+    public class ChargeResponse
+    {
+        public bool HasError { get; set; }
+        public int TransactionId { get; set; }
+    }
+
+    public class SuccessModel
+    {
+        public string FirstName { get; set; }
+        public int TransactionId { get; set; }
     }
 }
