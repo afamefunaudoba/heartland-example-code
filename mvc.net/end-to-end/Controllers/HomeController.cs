@@ -54,8 +54,7 @@ namespace end_to_end.Controllers
 
             try
             {
-                var authResponse = chargeService.Charge(15.15m, "usd", suToken.TokenValue, validCardHolder);
-                chargeService.Capture(authResponse.TransactionId);
+                var authResponse = chargeService.Charge(15.15m, "usd", suToken.TokenValue, validCardHolder);                
 
                 SendEmail();
 
