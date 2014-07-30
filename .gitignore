@@ -1,3 +1,10 @@
+# PHP Ignores
+#--------------
 **/.idea/**/*.*
+
+# Visual Studio Ignores
+#------------------------
+**/bin/**/*.*
+**/obj/**/*.*
 **/*.suo
 **/packages/**/*.*
