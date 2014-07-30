@@ -1,12 +1,12 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="end_to_end._Default" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="end_to_end.Default" %>
 
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SecureSubmit PHP end-to-end payment example using tokenization.">
-    <meta name="author" content="Mark Hagan">
+    <meta name="description" content="SecureSubmit C# WebForms end-to-end payment example using tokenization.">
+    <meta name="author" content="Clayton Hunt">
     <title>Simple Payment Form Demo</title>
 
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -17,7 +17,7 @@
 <body>
 <div class="container">
 <h1>PHP SecureSubmit Example</h1>
-<form class="payment_form form-horizontal" id="payment_form" action="ProcessPayment.aspx">
+<form class="payment_form form-horizontal" id="payment_form" action="Default.aspx">
 <h2>Billing Information</h2>
 <div class="form-group">
 	<label for="FirstName" class="col-sm-2 control-label">First Name</label>

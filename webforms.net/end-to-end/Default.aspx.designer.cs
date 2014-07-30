@@ -10,6 +10,6 @@
 namespace end_to_end {
     
     
-    public partial class _Default {
+    public partial class Default {
     }
 }
