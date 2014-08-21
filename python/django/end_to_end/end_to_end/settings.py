@@ -74,5 +74,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Email settings
-# EMAIL_HOST = ''
-# EMAIL_PORT = ''
+EMAIL_HOST = 'jvl-smtp.e-hps.com'
+EMAIL_PORT = '25'
